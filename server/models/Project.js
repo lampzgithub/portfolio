@@ -1,5 +1,13 @@
 const mongoose = require('mongoose');
 
+const blockSchema = new mongoose.Schema(
+  {
+    type: { type: String, enum: ['text', 'image'], required: true },
+    content: { type: String, default: '' }
+  },
+  { _id: false }
+);
+
 const projectSchema = new mongoose.Schema(
   {
     title: { type: String, required: true },
@@ -10,6 +18,7 @@ const projectSchema = new mongoose.Schema(
     role: { type: String, default: '' },
     highlights: [{ type: String }],
     images: [{ type: String }],
+    blocks: [blockSchema],
     link: { type: String, default: '' },
     github: { type: String, default: '' },
     order: { type: Number, default: 0 }

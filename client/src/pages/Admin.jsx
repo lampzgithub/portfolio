@@ -1,11 +1,11 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { api } from '../api.js';
+import { api, API_BASE } from '../api.js';
 import { useAuth } from '../context/AuthContext.jsx';
 
 const emptyProject = {
   title: '', tagline: '', description: '', stack: '', period: '', role: '',
-  highlights: '', images: [], link: '', github: '', order: 0
+  highlights: '', images: [], blocks: [], link: '', github: '', order: 0
 };
 
 const emptyCfg = {
@@ -14,6 +14,12 @@ const emptyCfg = {
   stack: [],
   contact: { lead: '', email: '', github: '', phone: '' }
 };
+
+function fullUrl(u) {
+  if (!u) return '';
+  if (u.startsWith('http://') || u.startsWith('https://')) return u;
+  return `${API_BASE}${u}`;
+}
 
 export default function Admin() {
   const { logout, user } = useAuth();
@@ -24,8 +30,7 @@ export default function Admin() {
   const [projects, setProjects] = useState([]);
   const [editing, setEditing] = useState(null);
   const [form, setForm] = useState(emptyProject);
-  const [urlInput, setUrlInput] = useState('');
-  const [uploading, setUploading] = useState(false);
+  const [blockUpload, setBlockUpload] = useState(null); // index currently uploading
 
   // config state
   const [cfg, setCfg] = useState(emptyCfg);
@@ -65,6 +70,7 @@ export default function Admin() {
       role: p.role || '',
       highlights: (p.highlights || []).join('\n'),
       images: p.images || [],
+      blocks: p.blocks || [],
       link: p.link || '',
       github: p.github || '',
       order: p.order || 0
@@ -73,27 +79,37 @@ export default function Admin() {
   };
   const cancel = () => { setEditing(null); setForm(emptyProject); };
 
-  const addUrl = () => {
-    const u = urlInput.trim();
-    if (!u) return;
-    setForm({ ...form, images: [...form.images, u] });
-    setUrlInput('');
-  };
-  const removeImg = (idx) => setForm({ ...form, images: form.images.filter((_, i) => i !== idx) });
-  const onFiles = async (e) => {
-    const files = Array.from(e.target.files || []);
-    if (files.length === 0) return;
-    setUploading(true);
+  // ── BLOCKS ──
+  const setBlocks = (updater) =>
+    setForm((cur) => ({ ...cur, blocks: typeof updater === 'function' ? updater(cur.blocks) : updater }));
+
+  const addTextBlock = () => setBlocks((b) => [...b, { type: 'text', content: '' }]);
+  const addImageBlock = () => setBlocks((b) => [...b, { type: 'image', content: '' }]);
+  const removeBlock = (i) => setBlocks((b) => b.filter((_, idx) => idx !== i));
+  const moveBlock = (i, dir) => setBlocks((b) => {
+    const j = i + dir;
+    if (j < 0 || j >= b.length) return b;
+    const copy = [...b];
+    [copy[i], copy[j]] = [copy[j], copy[i]];
+    return copy;
+  });
+  const updateBlock = (i, content) =>
+    setBlocks((b) => b.map((bl, idx) => idx === i ? { ...bl, content } : bl));
+
+  const onBlockFile = async (i, e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setBlockUpload(i);
     setErr('');
     try {
       const fd = new FormData();
-      files.forEach((f) => fd.append('images', f));
+      fd.append('images', file);
       const { urls } = await api.uploadImages(fd);
-      setForm((cur) => ({ ...cur, images: [...cur.images, ...urls] }));
+      if (urls[0]) updateBlock(i, urls[0]);
     } catch (ex) {
       setErr(ex.message);
     } finally {
-      setUploading(false);
+      setBlockUpload(null);
       e.target.value = '';
     }
   };
@@ -201,37 +217,64 @@ export default function Admin() {
                   <input value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} required /></div>
                 <div className="field"><label>tagline</label>
                   <input value={form.tagline} onChange={(e) => setForm({ ...form, tagline: e.target.value })} /></div>
-                <div className="field"><label>description</label>
+                <div className="field"><label>description (short intro paragraph)</label>
                   <textarea value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} required /></div>
-                <div className="field"><label>highlights (one per line)</label>
+                <div className="field"><label>highlights (one per line, optional)</label>
                   <textarea value={form.highlights} onChange={(e) => setForm({ ...form, highlights: e.target.value })} /></div>
                 <div className="field"><label>stack (comma separated)</label>
                   <input value={form.stack} onChange={(e) => setForm({ ...form, stack: e.target.value })} /></div>
 
+                {/* ── CONTENT BLOCKS (Medium-style) ── */}
                 <div className="field">
-                  <label>images</label>
-                  <div className="img-upload-zone">
-                    <span className="lbl">Add by URL</span>
-                    <div className="url-row">
-                      <input
-                        type="url"
-                        placeholder="https://i.imgur.com/..."
-                        value={urlInput}
-                        onChange={(e) => setUrlInput(e.target.value)}
-                      />
-                      <button type="button" className="btn ghost" onClick={addUrl}>add url</button>
-                    </div>
-                    <span className="lbl">Or upload files (max 5MB each, up to 10)</span>
-                    <input type="file" accept="image/*" multiple onChange={onFiles} disabled={uploading} />
-                    {uploading && <div style={{ marginTop: 8, fontFamily: 'var(--font-mono)', fontSize: 11, color: 'var(--cyan)' }}>uploading…</div>}
-                    <div className="img-chips">
-                      {form.images.map((img, idx) => (
-                        <span className="img-chip" key={idx}>
-                          {img.length > 36 ? img.slice(0, 32) + '…' : img}
-                          <button type="button" onClick={() => removeImg(idx)}>×</button>
-                        </span>
-                      ))}
-                    </div>
+                  <label>content blocks (text + images, in any order)</label>
+                  <div className="blocks-list">
+                    {form.blocks.length === 0 && (
+                      <div style={{ fontFamily: 'var(--font-mono)', fontSize: 12, color: 'var(--muted)', padding: '8px 0' }}>
+                        No blocks yet. Add a text or image block below.
+                      </div>
+                    )}
+                    {form.blocks.map((bl, i) => (
+                      <div className="block-card" key={i}>
+                        <div className="block-head">
+                          <span className="block-type">{bl.type === 'text' ? '¶ text' : '◧ image'}</span>
+                          <div className="block-actions">
+                            <button type="button" onClick={() => moveBlock(i, -1)} disabled={i === 0}>↑</button>
+                            <button type="button" onClick={() => moveBlock(i, 1)} disabled={i === form.blocks.length - 1}>↓</button>
+                            <button type="button" className="rm" onClick={() => removeBlock(i)}>×</button>
+                          </div>
+                        </div>
+                        {bl.type === 'text' ? (
+                          <textarea
+                            value={bl.content}
+                            onChange={(e) => updateBlock(i, e.target.value)}
+                            placeholder="Write the paragraph..."
+                            style={{ minHeight: 90 }}
+                          />
+                        ) : (
+                          <div>
+                            <input
+                              type="url"
+                              value={bl.content}
+                              onChange={(e) => updateBlock(i, e.target.value)}
+                              placeholder="https://i.imgur.com/...  or upload below"
+                            />
+                            <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginTop: 8 }}>
+                              <input type="file" accept="image/*" onChange={(e) => onBlockFile(i, e)} disabled={blockUpload === i} />
+                              {blockUpload === i && <span style={{ fontFamily: 'var(--font-mono)', fontSize: 11, color: 'var(--cyan)' }}>uploading…</span>}
+                            </div>
+                            {bl.content && (
+                              <div className="block-preview">
+                                <img src={fullUrl(bl.content)} alt="" />
+                              </div>
+                            )}
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                  <div style={{ display: 'flex', gap: 8, marginTop: 8 }}>
+                    <button type="button" className="btn ghost" onClick={addTextBlock}>+ text</button>
+                    <button type="button" className="btn ghost" onClick={addImageBlock}>+ image</button>
                   </div>
                 </div>
 
@@ -247,7 +290,7 @@ export default function Admin() {
                   <div className="field"><label>github</label>
                     <input value={form.github} onChange={(e) => setForm({ ...form, github: e.target.value })} /></div>
                 </div>
-                <div className="field"><label>order</label>
+                <div className="field"><label>order (lower shows first)</label>
                   <input type="number" value={form.order} onChange={(e) => setForm({ ...form, order: e.target.value })} /></div>
                 <div className="btn-row">
                   <button className="btn" type="submit">{editing === 'new' ? 'create' : 'save changes'}</button>
@@ -269,7 +312,7 @@ export default function Admin() {
                   <span className="idx">{String(i + 1).padStart(2, '0')}</span>
                   <div>
                     <h4>{p.title}</h4>
-                    <div className="tag">{p.tagline || '—'} · {p.images?.length || 0} image(s)</div>
+                    <div className="tag">{p.tagline || '—'} · {p.blocks?.length || 0} block(s)</div>
                   </div>
                   <div className="actions">
                     <button onClick={() => startEdit(p)}>edit</button>

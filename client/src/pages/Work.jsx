@@ -25,7 +25,8 @@ export default function Work() {
       .catch(() => setLoading(false));
   }, []);
 
-  const openLb = (images, index) => setLb({ open: true, images: images.map(fullUrl), index });
+  const openLightbox = (allImages, index) =>
+    setLb({ open: true, images: allImages.map(fullUrl), index });
   const closeLb = () => setLb((s) => ({ ...s, open: false }));
 
   return (
@@ -55,75 +56,102 @@ export default function Work() {
               Nothing here yet.
             </p>
           )}
-          {projects.map((p, i) => (
-            <article className="proj-detail" key={p._id}>
-              <div className="head">
-                <h2>
-                  <span style={{ fontFamily: 'var(--font-mono)', fontSize: 14, color: 'var(--muted)', marginRight: 14 }}>
-                    {String(i + 1).padStart(2, '0')}
-                  </span>
-                  {p.title}
-                </h2>
-                <div className="meta-block">
-                  {p.period && <div><strong>When</strong> · {p.period}</div>}
-                  {p.role && <div><strong>Role</strong> · {p.role}</div>}
+          {projects.map((p, i) => {
+            const imageBlocks = (p.blocks || []).filter((b) => b.type === 'image').map((b) => b.content);
+            const imageIndexInGallery = (idx) => {
+              let count = 0;
+              for (let k = 0; k < (p.blocks || []).length; k++) {
+                if (p.blocks[k].type !== 'image') continue;
+                if (k === idx) return count;
+                count++;
+              }
+              return 0;
+            };
+
+            return (
+              <article className="proj-detail" key={p._id}>
+                <div className="head">
+                  <h2>
+                    <span style={{ fontFamily: 'var(--font-mono)', fontSize: 14, color: 'var(--muted)', marginRight: 14 }}>
+                      {String(i + 1).padStart(2, '0')}
+                    </span>
+                    {p.title}
+                  </h2>
+                  <div className="meta-block">
+                    {p.period && <div><strong>When</strong> · {p.period}</div>}
+                    {p.role && <div><strong>Role</strong> · {p.role}</div>}
+                  </div>
                 </div>
-              </div>
 
-              {p.tagline && (
-                <p style={{ fontSize: 19, fontStyle: 'italic', color: 'var(--muted)', marginBottom: 22 }}>
-                  {p.tagline}
-                </p>
-              )}
+                {p.tagline && (
+                  <p style={{ fontSize: 19, fontStyle: 'italic', color: 'var(--muted)', marginBottom: 22 }}>
+                    {p.tagline}
+                  </p>
+                )}
 
-              <p className="desc">{p.description}</p>
+                <p className="desc">{p.description}</p>
 
-              {p.highlights?.length > 0 && (
-                <ul className="highlights">
-                  {p.highlights.map((h, idx) => (
-                    <li key={idx}>{h}</li>
-                  ))}
-                </ul>
-              )}
+                {p.highlights?.length > 0 && (
+                  <ul className="highlights">
+                    {p.highlights.map((h, idx) => (
+                      <li key={idx}>{h}</li>
+                    ))}
+                  </ul>
+                )}
 
-              {p.images?.length > 0 && (
-                <div className="img-gallery">
-                  {p.images.map((img, idx) => (
-                    <div
-                      key={idx}
-                      className="img-thumb"
-                      onClick={() => openLb(p.images, idx)}
-                    >
-                      <img src={fullUrl(img)} alt={`${p.title} screenshot ${idx + 1}`} />
-                    </div>
-                  ))}
-                </div>
-              )}
+                {/* ── BLOCKS (Medium-style) ── */}
+                {p.blocks?.length > 0 && (
+                  <div className="post-body">
+                    {p.blocks.map((bl, idx) => {
+                      if (bl.type === 'text') {
+                        return (
+                          <p className="post-text" key={idx}>
+                            {bl.content}
+                          </p>
+                        );
+                      }
+                      if (bl.type === 'image' && bl.content) {
+                        const galleryIdx = imageIndexInGallery(idx);
+                        return (
+                          <figure
+                            className="post-image"
+                            key={idx}
+                            onClick={() => openLightbox(imageBlocks, galleryIdx)}
+                          >
+                            <img src={fullUrl(bl.content)} alt="" />
+                          </figure>
+                        );
+                      }
+                      return null;
+                    })}
+                  </div>
+                )}
 
-              {p.stack?.length > 0 && (
-                <div className="stack">
-                  {p.stack.map((s, idx) => (
-                    <span key={idx}>{s}</span>
-                  ))}
-                </div>
-              )}
+                {p.stack?.length > 0 && (
+                  <div className="stack">
+                    {p.stack.map((s, idx) => (
+                      <span key={idx}>{s}</span>
+                    ))}
+                  </div>
+                )}
 
-              {(p.link || p.github) && (
-                <div className="links">
-                  {p.link && (
-                    <a href={p.link} target="_blank" rel="noreferrer">
-                      visit →
-                    </a>
-                  )}
-                  {p.github && (
-                    <a href={p.github} target="_blank" rel="noreferrer">
-                      source →
-                    </a>
-                  )}
-                </div>
-              )}
-            </article>
-          ))}
+                {(p.link || p.github) && (
+                  <div className="links">
+                    {p.link && (
+                      <a href={p.link} target="_blank" rel="noreferrer">
+                        visit →
+                      </a>
+                    )}
+                    {p.github && (
+                      <a href={p.github} target="_blank" rel="noreferrer">
+                        source →
+                      </a>
+                    )}
+                  </div>
+                )}
+              </article>
+            );
+          })}
         </div>
       </section>
 
