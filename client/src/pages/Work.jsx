@@ -103,9 +103,10 @@ export default function Work() {
                 {p.blocks?.length > 0 && (
                   <div className="post-body">
                     {p.blocks.map((bl, idx) => {
+                      const size = bl.size || 'medium';
                       if (bl.type === 'text') {
                         return (
-                          <p className="post-text" key={idx}>
+                          <p className={`post-text size-${size}`} key={idx}>
                             {bl.content}
                           </p>
                         );
@@ -114,7 +115,7 @@ export default function Work() {
                         const galleryIdx = imageIndexInGallery(idx);
                         return (
                           <figure
-                            className="post-image"
+                            className={`post-image size-${size}`}
                             key={idx}
                             onClick={() => openLightbox(imageBlocks, galleryIdx)}
                           >

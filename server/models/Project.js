@@ -3,7 +3,8 @@ const mongoose = require('mongoose');
 const blockSchema = new mongoose.Schema(
   {
     type: { type: String, enum: ['text', 'image'], required: true },
-    content: { type: String, default: '' }
+    content: { type: String, default: '' },
+    size: { type: String, enum: ['small', 'medium', 'large', 'full'], default: 'medium' }
   },
   { _id: false }
 );

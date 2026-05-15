@@ -83,8 +83,8 @@ export default function Admin() {
   const setBlocks = (updater) =>
     setForm((cur) => ({ ...cur, blocks: typeof updater === 'function' ? updater(cur.blocks) : updater }));
 
-  const addTextBlock = () => setBlocks((b) => [...b, { type: 'text', content: '' }]);
-  const addImageBlock = () => setBlocks((b) => [...b, { type: 'image', content: '' }]);
+  const addTextBlock = () => setBlocks((b) => [...b, { type: 'text', content: '', size: 'medium' }]);
+  const addImageBlock = () => setBlocks((b) => [...b, { type: 'image', content: '', size: 'medium' }]);
   const removeBlock = (i) => setBlocks((b) => b.filter((_, idx) => idx !== i));
   const moveBlock = (i, dir) => setBlocks((b) => {
     const j = i + dir;
@@ -95,6 +95,8 @@ export default function Admin() {
   });
   const updateBlock = (i, content) =>
     setBlocks((b) => b.map((bl, idx) => idx === i ? { ...bl, content } : bl));
+  const updateBlockSize = (i, size) =>
+    setBlocks((b) => b.map((bl, idx) => idx === i ? { ...bl, size } : bl));
 
   const onBlockFile = async (i, e) => {
     const file = e.target.files?.[0];
@@ -238,6 +240,17 @@ export default function Admin() {
                         <div className="block-head">
                           <span className="block-type">{bl.type === 'text' ? '¶ text' : '◧ image'}</span>
                           <div className="block-actions">
+                            <select
+                              className="block-size"
+                              value={bl.size || 'medium'}
+                              onChange={(e) => updateBlockSize(i, e.target.value)}
+                              title="size"
+                            >
+                              <option value="small">small</option>
+                              <option value="medium">medium</option>
+                              <option value="large">large</option>
+                              <option value="full">full</option>
+                            </select>
                             <button type="button" onClick={() => moveBlock(i, -1)} disabled={i === 0}>↑</button>
                             <button type="button" onClick={() => moveBlock(i, 1)} disabled={i === form.blocks.length - 1}>↓</button>
                             <button type="button" className="rm" onClick={() => removeBlock(i)}>×</button>
