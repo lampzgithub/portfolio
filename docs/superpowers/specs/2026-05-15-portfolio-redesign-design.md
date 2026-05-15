@@ -58,7 +58,7 @@ All animations are pure CSS — no JS animation libraries.
 ### About Section
 - Two-column grid: sidebar (monospace keys in `--purple`, values in `--body`) + body text
 - **Body copy**:
-  - _"Started with a stupid Discord bot idea. It scaled to 13k members before I had a plan — which meant learning systems design by fire, not by book. I shipped, it broke, I fixed it. Repeat until good."_
+  - _"Started with a Discord bot idea. It scaled to 13k members before I had a plan — which meant learning systems design by fire, not by book. I shipped, it broke, I fixed it. Repeat until good."_
   - _"Pivoted that into PayCode — a dev agency that delivered 600+ projects in a year. What I actually learned: writing specs, managing scope creep, and that most technical problems are just communication problems in disguise."_
   - _"These days I'm going deeper into the stack. Networks, security, the guts of systems. The stuff that makes the difference between someone who can code and someone who understands what's actually happening."_
 - Drop-cap first letter in `--purple`
