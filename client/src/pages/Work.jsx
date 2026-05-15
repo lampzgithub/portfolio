@@ -1,11 +1,19 @@
 import { useEffect, useState } from 'react';
 import Nav from '../components/Nav.jsx';
 import Footer from '../components/Footer.jsx';
-import { api } from '../api.js';
+import Lightbox from '../components/Lightbox.jsx';
+import { api, API_BASE } from '../api.js';
+
+function fullUrl(u) {
+  if (!u) return '';
+  if (u.startsWith('http://') || u.startsWith('https://')) return u;
+  return `${API_BASE}${u}`;
+}
 
 export default function Work() {
   const [projects, setProjects] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [lb, setLb] = useState({ open: false, images: [], index: 0 });
 
   useEffect(() => {
     api
@@ -17,20 +25,26 @@ export default function Work() {
       .catch(() => setLoading(false));
   }, []);
 
+  const openLb = (images, index) => setLb({ open: true, images: images.map(fullUrl), index });
+  const closeLb = () => setLb((s) => ({ ...s, open: false }));
+
   return (
     <>
       <Nav />
 
-      <header className="hero wrap" style={{ paddingBottom: 60 }}>
-        <div className="label">SB — work archive</div>
-        <h1>
-          Things I've built,<br />
-          <em>shipped, or sold.</em>
-        </h1>
-        <p className="sub">
-          The full list. Some made money, some didn't, some I'd do differently
-          now. All taught me something.
-        </p>
+      <header className="hero" style={{ paddingBottom: 60 }}>
+        <div className="wrap">
+          <div className="label">SB — work archive</div>
+          <h1>
+            <span className="glitch" data-text="Things">Things</span>{' '}
+            I've built,<br />
+            <span className="accent">shipped, or sold.</span>
+          </h1>
+          <p className="sub" style={{ marginTop: 18 }}>
+            The full list. Some made money, some didn't, some I'd do differently
+            now. All taught me something.
+          </p>
+        </div>
       </header>
 
       <section style={{ padding: '40px 0 80px' }}>
@@ -72,6 +86,20 @@ export default function Work() {
                 </ul>
               )}
 
+              {p.images?.length > 0 && (
+                <div className="img-gallery">
+                  {p.images.map((img, idx) => (
+                    <div
+                      key={idx}
+                      className="img-thumb"
+                      onClick={() => openLb(p.images, idx)}
+                    >
+                      <img src={fullUrl(img)} alt={`${p.title} screenshot ${idx + 1}`} />
+                    </div>
+                  ))}
+                </div>
+              )}
+
               {p.stack?.length > 0 && (
                 <div className="stack">
                   {p.stack.map((s, idx) => (
@@ -98,6 +126,15 @@ export default function Work() {
           ))}
         </div>
       </section>
+
+      {lb.open && (
+        <Lightbox
+          images={lb.images}
+          index={lb.index}
+          onClose={closeLb}
+          onChange={(i) => setLb((s) => ({ ...s, index: i }))}
+        />
+      )}
 
       <Footer />
     </>

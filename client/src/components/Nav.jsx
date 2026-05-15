@@ -3,11 +3,12 @@ import { NavLink } from 'react-router-dom';
 export default function Nav() {
   return (
     <nav className="nav">
-      <NavLink to="/" className="brand">Shrikant Bhama</NavLink>
+      <NavLink to="/" className="brand">
+        <span className="sb">SB</span> — portfolio
+      </NavLink>
       <ul>
-        <li><NavLink to="/" end>index</NavLink></li>
-        <li><NavLink to="/work">work</NavLink></li>
-        <li><a href="mailto:shreekantbhama5@gmail.com">contact</a></li>
+        <li><NavLink to="/" end className={({ isActive }) => (isActive ? 'active' : undefined)}>home</NavLink></li>
+        <li><NavLink to="/work" className={({ isActive }) => (isActive ? 'active' : undefined)}>work</NavLink></li>
       </ul>
     </nav>
   );

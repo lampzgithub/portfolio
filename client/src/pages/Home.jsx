@@ -1,41 +1,115 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import Nav from '../components/Nav.jsx';
 import Footer from '../components/Footer.jsx';
 import { api } from '../api.js';
 
+const DEFAULT_CONFIG = {
+  hero: {
+    eyebrow: 'SB — 01 / portfolio',
+    tagline: 'Reverse-engineers problems until they give up.',
+    sub: 'Ran a Discord community of 13k people before I could drive. Built and sold a dev agency by 20. Now going deep on systems, security, and the fundamentals I skipped the first time.',
+    badges: [
+      { label: 'Delhi, India', color: 'purple' },
+      { label: 'BCA · GGSIPU', color: 'cyan' },
+      { label: 'Open to work', color: 'pink' }
+    ]
+  },
+  about: {
+    paragraphs: [
+      "Started with a Discord bot idea. It scaled to 13k members before I had a plan — which meant learning systems design by fire, not by book. I shipped, it broke, I fixed it. Repeat until good.",
+      "Pivoted that into PayCode — a dev agency that delivered 600+ projects in a year. What I actually learned: writing specs, managing scope creep, and that most technical problems are just communication problems in disguise.",
+      "These days I'm going deeper into the stack. Networks, security, the guts of systems. The stuff that makes the difference between someone who can code and someone who understands what's actually happening."
+    ],
+    sidebar: [
+      { key: 'Currently', value: 'BCA, final year' },
+      { key: 'Previously', value: 'Founder, PayCode' },
+      { key: 'Reading', value: 'Networks & security' },
+      { key: 'Tools', value: 'Python, Linux, Docker' }
+    ]
+  },
+  stack: [
+    { category: 'Languages', color: 'purple', items: ['Python', 'JavaScript', 'HTML & CSS', 'C'] },
+    { category: 'Libraries', color: 'cyan', items: ['pandas, numpy', 'matplotlib', 'requests, pillow', 'opencv'] },
+    { category: 'Infra & tools', color: 'pink', items: ['Git, Docker', 'SQL, SQLite', 'NoSQL', 'GitHub Actions'] },
+    { category: 'Security & net', color: 'green', items: ['Wireshark', 'Burp Suite', 'Postman', 'REST APIs'] }
+  ],
+  contact: {
+    lead: "If you're working on something interesting or just want to chat about bots, security, or running small businesses — the inbox is open.",
+    email: 'shreekantbhama5@gmail.com',
+    github: 'https://github.com/cheemzboi',
+    phone: '+91 85729 97389'
+  }
+};
+
+function mergeCfg(remote) {
+  if (!remote) return DEFAULT_CONFIG;
+  return {
+    hero: {
+      ...DEFAULT_CONFIG.hero,
+      ...(remote.hero || {}),
+      badges: remote.hero?.badges?.length ? remote.hero.badges : DEFAULT_CONFIG.hero.badges
+    },
+    about: {
+      paragraphs: remote.about?.paragraphs?.length ? remote.about.paragraphs : DEFAULT_CONFIG.about.paragraphs,
+      sidebar: remote.about?.sidebar?.length ? remote.about.sidebar : DEFAULT_CONFIG.about.sidebar
+    },
+    stack: remote.stack?.length ? remote.stack : DEFAULT_CONFIG.stack,
+    contact: { ...DEFAULT_CONFIG.contact, ...(remote.contact || {}) }
+  };
+}
+
+function useReveal() {
+  const ref = useRef(null);
+  useEffect(() => {
+    if (!ref.current) return;
+    const els = ref.current.querySelectorAll('.reveal');
+    const obs = new IntersectionObserver(
+      (entries) => entries.forEach((e) => e.isIntersecting && e.target.classList.add('visible')),
+      { threshold: 0.15 }
+    );
+    els.forEach((el) => obs.observe(el));
+    return () => obs.disconnect();
+  }, []);
+  return ref;
+}
+
 export default function Home() {
   const [projects, setProjects] = useState([]);
+  const [cfg, setCfg] = useState(DEFAULT_CONFIG);
+  const rootRef = useReveal();
 
   useEffect(() => {
     api.getProjects().then(setProjects).catch(() => setProjects([]));
+    api.getConfig().then((c) => setCfg(mergeCfg(c))).catch(() => setCfg(DEFAULT_CONFIG));
   }, []);
 
+  const firstName = 'Shrikant';
+  const lastName = 'Bhama.';
+
   return (
-    <>
+    <div ref={rootRef}>
       <Nav />
 
-      <header className="hero wrap">
-        <div className="label">SB — 01 / portfolio</div>
-        <h1>
-          Shrikant Bhama.<br />
-          Builds things on the internet, <em>sometimes for money,<br />sometimes just to see.</em>
-        </h1>
-        <p className="sub">
-          Computer apps student in Delhi. Spent the last few years running a Discord
-          bot that grew faster than I expected, and a small dev agency I eventually sold.
-          Currently learning more about backend systems, security, and the boring parts
-          of shipping software.
-        </p>
-
-        <div className="meta">
-          <span>BASED IN<strong>Delhi, India</strong></span>
-          <span>STUDYING<strong>BCA, GGSIPU</strong></span>
-          <span>STATUS<strong>Open to work</strong></span>
+      <header className="hero">
+        <div className="wrap">
+          <div className="label">{cfg.hero.eyebrow}</div>
+          <h1>
+            <span className="glitch" data-text={firstName}>{firstName}</span>
+            <br />
+            <span className="accent">{lastName}</span>
+          </h1>
+          <div className="tagline">{cfg.hero.tagline}</div>
+          <p className="sub">{cfg.hero.sub}</p>
+          <div className="badges">
+            {cfg.hero.badges.map((b, i) => (
+              <span key={i} className={`badge ${b.color !== 'purple' ? b.color : ''}`}>{b.label}</span>
+            ))}
+          </div>
         </div>
       </header>
 
-      <section className="block">
+      <section className="block reveal">
         <div className="wrap">
           <div className="section-head">
             <h2>About</h2>
@@ -43,80 +117,38 @@ export default function Home() {
           </div>
           <div className="about-grid">
             <aside className="aside">
-              <div><strong>Currently</strong>BCA, final year</div>
-              <div><strong>Previously</strong>Founder, PayCode</div>
-              <div><strong>Reading</strong>About networks &amp; sec</div>
-              <div><strong>Tools</strong>Python, Linux, Docker</div>
+              {cfg.about.sidebar.map((s, i) => (
+                <div key={i}>
+                  <strong>{s.key}</strong>
+                  <span>{s.value}</span>
+                </div>
+              ))}
             </aside>
             <div className="body">
-              <p>
-                I started writing code because I wanted to make a Discord bot do something
-                stupid. That bot ended up with 13,000 members and 800 daily users, and somewhere
-                along the way I learned how to actually ship software people pay for.
-              </p>
-              <p>
-                After that I ran a small dev agency, PayCode, for about a year — delivered
-                600+ projects, hired three people, then sold it. It taught me more about
-                writing clearly, scoping work, and saying no than any class has.
-              </p>
-              <p>
-                Right now I'm finishing my BCA and going deeper into things I skipped past
-                the first time: proper databases, networking, system design, security. Less
-                hustle, more fundamentals.
-              </p>
+              {cfg.about.paragraphs.map((p, i) => <p key={i}>{p}</p>)}
             </div>
           </div>
         </div>
       </section>
 
-      <section className="block">
+      <section className="block reveal">
         <div className="wrap">
           <div className="section-head">
             <h2>Stack</h2>
             <span className="num">03 / tools</span>
           </div>
           <div className="skills-grid">
-            <div className="skill-cell">
-              <h4>Languages</h4>
-              <ul>
-                <li>Python</li>
-                <li>JavaScript</li>
-                <li>HTML &amp; CSS</li>
-                <li>C</li>
-              </ul>
-            </div>
-            <div className="skill-cell">
-              <h4>Libraries</h4>
-              <ul>
-                <li>pandas, numpy</li>
-                <li>matplotlib</li>
-                <li>requests, pillow</li>
-                <li>opencv</li>
-              </ul>
-            </div>
-            <div className="skill-cell">
-              <h4>Infra &amp; tools</h4>
-              <ul>
-                <li>Git, Docker</li>
-                <li>SQL, SQLite</li>
-                <li>NoSQL</li>
-                <li>GitHub Actions</li>
-              </ul>
-            </div>
-            <div className="skill-cell">
-              <h4>Security &amp; net</h4>
-              <ul>
-                <li>Wireshark</li>
-                <li>Burp Suite</li>
-                <li>Postman</li>
-                <li>REST APIs</li>
-              </ul>
-            </div>
+            {cfg.stack.map((cat, i) => (
+              <div key={i} className={`skill-cell c-${cat.color}`}>
+                <h4>{cat.category}</h4>
+                <ul>{cat.items.map((it, j) => <li key={j}>{it}</li>)}</ul>
+              </div>
+            ))}
           </div>
         </div>
       </section>
 
-      <section className="block">
+      <section className="block reveal">
         <div className="wrap">
           <div className="section-head">
             <h2>Selected work</h2>
@@ -133,13 +165,13 @@ export default function Home() {
                   <h3>{p.title}</h3>
                   <div className="tag">{p.tagline}</div>
                 </div>
-                <span className="arrow">→ read</span>
+                <span className="arrow">→ view</span>
               </Link>
             ))}
           </div>
           {projects.length > 4 && (
             <div style={{ marginTop: 30 }}>
-              <Link to="/work" style={{ fontFamily: 'var(--font-mono)', fontSize: 13 }}>
+              <Link to="/work" style={{ fontFamily: 'var(--font-mono)', fontSize: 13, color: 'var(--cyan)' }}>
                 see everything →
               </Link>
             </div>
@@ -147,27 +179,24 @@ export default function Home() {
         </div>
       </section>
 
-      <section className="block">
+      <section className="block reveal">
         <div className="wrap">
           <div className="section-head">
             <h2>Get in touch</h2>
             <span className="num">05 / contact</span>
           </div>
           <div className="contact-grid">
-            <p className="lead">
-              If you're working on something interesting <em>or just want to chat about
-              bots, security, or running small businesses</em> — the inbox is open.
-            </p>
+            <p className="lead">{cfg.contact.lead}</p>
             <div className="contact-list">
-              <a href="mailto:shreekantbhama5@gmail.com">shreekantbhama5@gmail.com →</a>
-              <a href="https://github.com/cheemzboi" target="_blank" rel="noreferrer">github / cheemzboi →</a>
-              <a href="tel:+918572997389">+91 85729 97389 →</a>
+              {cfg.contact.email && <a href={`mailto:${cfg.contact.email}`}>{cfg.contact.email} →</a>}
+              {cfg.contact.github && <a href={cfg.contact.github} target="_blank" rel="noreferrer">github →</a>}
+              {cfg.contact.phone && <a href={`tel:${cfg.contact.phone.replace(/\s+/g, '')}`}>{cfg.contact.phone} →</a>}
             </div>
           </div>
         </div>
       </section>
 
       <Footer />
-    </>
+    </div>
   );
 }
