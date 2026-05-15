@@ -9,6 +9,7 @@ const projectSchema = new mongoose.Schema(
     period: { type: String, default: '' },
     role: { type: String, default: '' },
     highlights: [{ type: String }],
+    images: [{ type: String }],
     link: { type: String, default: '' },
     github: { type: String, default: '' },
     order: { type: Number, default: 0 }

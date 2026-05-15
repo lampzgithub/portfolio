@@ -9,3 +9,5 @@ build
 .claude
 .superpowers
 docs
+server/uploads/*
+!server/uploads/.gitkeep

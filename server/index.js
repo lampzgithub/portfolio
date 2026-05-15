@@ -2,9 +2,13 @@ require('dotenv').config();
 const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
+const rateLimit = require('express-rate-limit');
 
 const projectsRoute = require('./routes/projects');
 const authRoute = require('./routes/auth');
+const configRoute = require('./routes/config');
+const uploadRoute = require('./routes/upload');
+const { UPLOAD_DIR } = require('./middleware/upload');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -15,12 +19,31 @@ app.use(cors({
 }));
 app.use(express.json());
 
+// trust proxy for accurate rate-limit IP on Railway
+app.set('trust proxy', 1);
+
+const loginLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 5,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: 'Too many login attempts. Try again in 15 minutes.' }
+});
+
 app.get('/', (req, res) => {
   res.json({ status: 'running', name: 'bhama portfolio api' });
 });
 
+// static uploads
+app.use('/uploads', express.static(UPLOAD_DIR));
+
+// rate limit must be mounted before the auth route
+app.use('/api/auth/login', loginLimiter);
+
 app.use('/api/auth', authRoute);
 app.use('/api/projects', projectsRoute);
+app.use('/api/config', configRoute);
+app.use('/api/upload', uploadRoute);
 
 mongoose
   .connect(process.env.MONGO_URI)
