@@ -10,10 +10,15 @@ function fullUrl(u) {
   return `${API_BASE}${u}`;
 }
 
+function firstImage(project) {
+  const b = (project.blocks || []).find((x) => x.type === 'image' && x.content);
+  return b ? b.content : null;
+}
+
 export default function Work() {
   const [projects, setProjects] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [activeIdx, setActiveIdx] = useState(0);
+  const [activeIdx, setActiveIdx] = useState(null);
   const [lb, setLb] = useState({ open: false, images: [], index: 0 });
 
   useEffect(() => {
@@ -30,7 +35,7 @@ export default function Work() {
     setLb({ open: true, images: allImages.map(fullUrl), index });
   const closeLb = () => setLb((s) => ({ ...s, open: false }));
 
-  const active = projects[activeIdx];
+  const active = activeIdx !== null ? projects[activeIdx] : null;
 
   return (
     <>
@@ -60,23 +65,43 @@ export default function Work() {
             </p>
           )}
 
-          {projects.length > 0 && (
-            <div className="work-tabs" role="tablist">
-              {projects.map((p, i) => (
-                <button
-                  key={p._id}
-                  role="tab"
-                  aria-selected={i === activeIdx}
-                  className={`work-tab ${i === activeIdx ? 'active' : ''}`}
-                  onClick={() => setActiveIdx(i)}
-                >
-                  <span className="work-tab-num">{String(i + 1).padStart(2, '0')}</span>
-                  <span className="work-tab-title">{p.title}</span>
-                </button>
-              ))}
+          {/* ── CARD GRID (when nothing selected) ── */}
+          {!active && projects.length > 0 && (
+            <div className="work-grid">
+              {projects.map((p, i) => {
+                const thumb = firstImage(p);
+                return (
+                  <button
+                    key={p._id}
+                    className="work-card"
+                    onClick={() => setActiveIdx(i)}
+                  >
+                    <div className="work-card-thumb">
+                      {thumb ? (
+                        <img src={fullUrl(thumb)} alt="" />
+                      ) : (
+                        <div className="work-card-thumb-empty">
+                          <span>{String(i + 1).padStart(2, '0')}</span>
+                        </div>
+                      )}
+                      <div className="work-card-num">{String(i + 1).padStart(2, '0')}</div>
+                    </div>
+                    <div className="work-card-body">
+                      <h3 className="work-card-title">{p.title}</h3>
+                      {p.tagline && <p className="work-card-tag">{p.tagline}</p>}
+                      <div className="work-card-meta">
+                        {p.period && <span>{p.period}</span>}
+                        {p.stack?.length > 0 && <span>{p.stack.slice(0, 3).join(' · ')}</span>}
+                      </div>
+                      <span className="work-card-cta">read →</span>
+                    </div>
+                  </button>
+                );
+              })}
             </div>
           )}
 
+          {/* ── DETAIL VIEW (when a card is active) ── */}
           {active && (() => {
             const imageBlocks = (active.blocks || []).filter((b) => b.type === 'image').map((b) => b.content);
             const imageIndexInGallery = (idx) => {
@@ -90,87 +115,93 @@ export default function Work() {
             };
 
             return (
-              <article className="proj-detail" key={active._id}>
-                <div className="head">
-                  <h2>
-                    <span style={{ fontFamily: 'var(--font-mono)', fontSize: 14, color: 'var(--muted)', marginRight: 14 }}>
-                      {String(activeIdx + 1).padStart(2, '0')}
-                    </span>
-                    {active.title}
-                  </h2>
-                  <div className="meta-block">
-                    {active.period && <div><strong>When</strong> · {active.period}</div>}
-                    {active.role && <div><strong>Role</strong> · {active.role}</div>}
+              <>
+                <button className="work-back" onClick={() => setActiveIdx(null)}>
+                  ← all projects
+                </button>
+
+                <article className="proj-detail" key={active._id}>
+                  <div className="head">
+                    <h2>
+                      <span style={{ fontFamily: 'var(--font-mono)', fontSize: 14, color: 'var(--muted)', marginRight: 14 }}>
+                        {String(activeIdx + 1).padStart(2, '0')}
+                      </span>
+                      {active.title}
+                    </h2>
+                    <div className="meta-block">
+                      {active.period && <div><strong>When</strong> · {active.period}</div>}
+                      {active.role && <div><strong>Role</strong> · {active.role}</div>}
+                    </div>
                   </div>
-                </div>
 
-                {active.tagline && (
-                  <p style={{ fontSize: 19, fontStyle: 'italic', color: 'var(--muted)', marginBottom: 22 }}>
-                    {active.tagline}
-                  </p>
-                )}
+                  {active.tagline && (
+                    <p style={{ fontSize: 19, fontStyle: 'italic', color: 'var(--muted)', marginBottom: 22 }}>
+                      {active.tagline}
+                    </p>
+                  )}
 
-                <p className="desc">{active.description}</p>
+                  <p className="desc">{active.description}</p>
 
-                {active.highlights?.length > 0 && (
-                  <ul className="highlights">
-                    {active.highlights.map((h, idx) => (
-                      <li key={idx}>{h}</li>
-                    ))}
-                  </ul>
-                )}
+                  {active.highlights?.length > 0 && (
+                    <ul className="highlights">
+                      {active.highlights.map((h, idx) => (
+                        <li key={idx}>{h}</li>
+                      ))}
+                    </ul>
+                  )}
 
-                {active.blocks?.length > 0 && (
-                  <div className="post-body">
-                    {active.blocks.map((bl, idx) => {
-                      const size = bl.size || 'medium';
-                      if (bl.type === 'text') {
-                        return (
-                          <p className={`post-text size-${size}`} key={idx}>
-                            {bl.content}
-                          </p>
-                        );
-                      }
-                      if (bl.type === 'image' && bl.content) {
-                        const galleryIdx = imageIndexInGallery(idx);
-                        return (
-                          <figure
-                            className={`post-image size-${size}`}
-                            key={idx}
-                            onClick={() => openLightbox(imageBlocks, galleryIdx)}
-                          >
-                            <img src={fullUrl(bl.content)} alt="" />
-                          </figure>
-                        );
-                      }
-                      return null;
-                    })}
-                  </div>
-                )}
+                  {active.blocks?.length > 0 && (
+                    <div className="post-body">
+                      {active.blocks.map((bl, idx) => {
+                        const size = bl.size || 'medium';
+                        if (bl.type === 'text') {
+                          return (
+                            <p className={`post-text size-${size}`} key={idx}>
+                              {bl.content}
+                            </p>
+                          );
+                        }
+                        if (bl.type === 'image' && bl.content) {
+                          const galleryIdx = imageIndexInGallery(idx);
+                          return (
+                            <figure
+                              className={`post-image size-${size}`}
+                              key={idx}
+                              onClick={() => openLightbox(imageBlocks, galleryIdx)}
+                            >
+                              <img src={fullUrl(bl.content)} alt="" />
+                            </figure>
+                          );
+                        }
+                        return null;
+                      })}
+                    </div>
+                  )}
 
-                {active.stack?.length > 0 && (
-                  <div className="stack">
-                    {active.stack.map((s, idx) => (
-                      <span key={idx}>{s}</span>
-                    ))}
-                  </div>
-                )}
+                  {active.stack?.length > 0 && (
+                    <div className="stack">
+                      {active.stack.map((s, idx) => (
+                        <span key={idx}>{s}</span>
+                      ))}
+                    </div>
+                  )}
 
-                {(active.link || active.github) && (
-                  <div className="links">
-                    {active.link && (
-                      <a href={active.link} target="_blank" rel="noreferrer">
-                        visit →
-                      </a>
-                    )}
-                    {active.github && (
-                      <a href={active.github} target="_blank" rel="noreferrer">
-                        source →
-                      </a>
-                    )}
-                  </div>
-                )}
-              </article>
+                  {(active.link || active.github) && (
+                    <div className="links">
+                      {active.link && (
+                        <a href={active.link} target="_blank" rel="noreferrer">
+                          visit →
+                        </a>
+                      )}
+                      {active.github && (
+                        <a href={active.github} target="_blank" rel="noreferrer">
+                          source →
+                        </a>
+                      )}
+                    </div>
+                  )}
+                </article>
+              </>
             );
           })()}
         </div>
