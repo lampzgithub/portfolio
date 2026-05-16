@@ -1,20 +1,6 @@
 const multer = require('multer');
-const path = require('path');
-const fs = require('fs');
-const { v4: uuidv4 } = require('uuid');
-
-const UPLOAD_DIR = path.join(__dirname, '..', 'uploads');
-if (!fs.existsSync(UPLOAD_DIR)) fs.mkdirSync(UPLOAD_DIR, { recursive: true });
 
 const ALLOWED = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
-
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => cb(null, UPLOAD_DIR),
-  filename: (req, file, cb) => {
-    const ext = path.extname(file.originalname).toLowerCase() || '.bin';
-    cb(null, `${uuidv4()}${ext}`);
-  }
-});
 
 const fileFilter = (req, file, cb) => {
   if (ALLOWED.includes(file.mimetype)) cb(null, true);
@@ -22,9 +8,9 @@ const fileFilter = (req, file, cb) => {
 };
 
 const upload = multer({
-  storage,
+  storage: multer.memoryStorage(),
   fileFilter,
   limits: { fileSize: 5 * 1024 * 1024, files: 10 }
 });
 
-module.exports = { upload, UPLOAD_DIR };
+module.exports = { upload };

@@ -8,7 +8,7 @@ const projectsRoute = require('./routes/projects');
 const authRoute = require('./routes/auth');
 const configRoute = require('./routes/config');
 const uploadRoute = require('./routes/upload');
-const { UPLOAD_DIR } = require('./middleware/upload');
+const imagesRoute = require('./routes/images');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -34,9 +34,6 @@ app.get('/', (req, res) => {
   res.json({ status: 'running', name: 'bhama portfolio api' });
 });
 
-// static uploads
-app.use('/uploads', express.static(UPLOAD_DIR));
-
 // rate limit must be mounted before the auth route
 app.use('/api/auth/login', loginLimiter);
 
@@ -44,6 +41,7 @@ app.use('/api/auth', authRoute);
 app.use('/api/projects', projectsRoute);
 app.use('/api/config', configRoute);
 app.use('/api/upload', uploadRoute);
+app.use('/api/images', imagesRoute);
 
 mongoose
   .connect(process.env.MONGO_URI)
