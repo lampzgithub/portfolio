@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import Nav from '../components/Nav.jsx';
 import Footer from '../components/Footer.jsx';
 import { api } from '../api.js';
@@ -29,10 +29,30 @@ const DEFAULT_CONFIG = {
     ]
   },
   stack: [
-    { category: 'Languages', color: 'purple', items: ['Python', 'JavaScript', 'HTML & CSS', 'C'] },
-    { category: 'Libraries', color: 'cyan', items: ['pandas, numpy', 'matplotlib', 'requests, pillow', 'opencv'] },
-    { category: 'Infra & tools', color: 'pink', items: ['Git, Docker', 'SQL, SQLite', 'NoSQL', 'GitHub Actions'] },
-    { category: 'Security & net', color: 'green', items: ['Wireshark', 'Burp Suite', 'Postman', 'REST APIs'] }
+    { category: 'Languages', color: 'purple', items: [
+      { name: 'Python', logo: 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/python/python-original.svg' },
+      { name: 'JavaScript', logo: 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/javascript/javascript-original.svg' },
+      { name: 'HTML & CSS', logo: 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/html5/html5-original.svg' },
+      { name: 'C', logo: 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/c/c-original.svg' }
+    ] },
+    { category: 'Libraries', color: 'cyan', items: [
+      { name: 'pandas, numpy', logo: 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/pandas/pandas-original.svg' },
+      { name: 'matplotlib', logo: '' },
+      { name: 'requests, pillow', logo: '' },
+      { name: 'opencv', logo: 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/opencv/opencv-original.svg' }
+    ] },
+    { category: 'Infra & tools', color: 'pink', items: [
+      { name: 'Git, Docker', logo: 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/docker/docker-original.svg' },
+      { name: 'SQL, SQLite', logo: 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/sqlite/sqlite-original.svg' },
+      { name: 'NoSQL', logo: 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/mongodb/mongodb-original.svg' },
+      { name: 'GitHub Actions', logo: 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/github/github-original.svg' }
+    ] },
+    { category: 'Security & net', color: 'green', items: [
+      { name: 'Wireshark', logo: '' },
+      { name: 'Burp Suite', logo: '' },
+      { name: 'Postman', logo: 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/postman/postman-original.svg' },
+      { name: 'REST APIs', logo: '' }
+    ] }
   ],
   contact: {
     lead: "If you're working on something interesting or just want to chat about bots, security, or running small businesses — the inbox is open.",
@@ -78,11 +98,28 @@ export default function Home() {
   const [projects, setProjects] = useState([]);
   const [cfg, setCfg] = useState(DEFAULT_CONFIG);
   const rootRef = useReveal();
+  const loc = useLocation();
+  const nav = useNavigate();
 
   useEffect(() => {
     api.getProjects().then(setProjects).catch(() => setProjects([]));
     api.getConfig().then((c) => setCfg(mergeCfg(c))).catch(() => setCfg(DEFAULT_CONFIG));
   }, []);
+
+  // Scroll to section if Nav pushed us here with a scrollTo target,
+  // or if there's a hash on the URL.
+  useEffect(() => {
+    const target = loc.state?.scrollTo || (loc.hash ? loc.hash.replace('#', '') : null);
+    if (!target) return;
+    // small delay so the page has rendered the section
+    const t = setTimeout(() => {
+      const el = document.getElementById(target);
+      if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      // clear router state so a back-and-forward doesn't keep re-scrolling
+      if (loc.state?.scrollTo) nav(loc.pathname, { replace: true, state: {} });
+    }, 150);
+    return () => clearTimeout(t);
+  }, [loc.state, loc.hash, loc.pathname, nav]);
 
   const firstName = 'Shrikant';
   const lastName = 'Bhama.';
@@ -131,7 +168,7 @@ export default function Home() {
         </div>
       </section>
 
-      <section className="block reveal">
+      <section id="skills" className="block reveal">
         <div className="wrap">
           <div className="section-head">
             <h2>Stack</h2>
@@ -141,7 +178,18 @@ export default function Home() {
             {cfg.stack.map((cat, i) => (
               <div key={i} className={`skill-cell c-${cat.color}`}>
                 <h4>{cat.category}</h4>
-                <ul>{cat.items.map((it, j) => <li key={j}>{it}</li>)}</ul>
+                <ul>
+                  {cat.items.map((it, j) => {
+                    const name = typeof it === 'string' ? it : it?.name || '';
+                    const logo = typeof it === 'string' ? '' : it?.logo || '';
+                    return (
+                      <li key={j}>
+                        {logo && <img src={logo} alt="" className="skill-logo" loading="lazy" />}
+                        <span>{name}</span>
+                      </li>
+                    );
+                  })}
+                </ul>
               </div>
             ))}
           </div>
@@ -179,7 +227,7 @@ export default function Home() {
         </div>
       </section>
 
-      <section className="block reveal">
+      <section id="contact" className="block reveal">
         <div className="wrap">
           <div className="section-head">
             <h2>Get in touch</h2>

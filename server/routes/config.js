@@ -27,10 +27,38 @@ const DEFAULTS = {
     ]
   },
   stack: [
-    { category: 'Languages', color: 'purple', items: ['Python', 'JavaScript', 'HTML & CSS', 'C'] },
-    { category: 'Libraries', color: 'cyan', items: ['pandas, numpy', 'matplotlib', 'requests, pillow', 'opencv'] },
-    { category: 'Infra & tools', color: 'pink', items: ['Git, Docker', 'SQL, SQLite', 'NoSQL', 'GitHub Actions'] },
-    { category: 'Security & net', color: 'green', items: ['Wireshark', 'Burp Suite', 'Postman', 'REST APIs'] }
+    {
+      category: 'Languages', color: 'purple', items: [
+        { name: 'Python', logo: 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/python/python-original.svg' },
+        { name: 'JavaScript', logo: 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/javascript/javascript-original.svg' },
+        { name: 'HTML & CSS', logo: 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/html5/html5-original.svg' },
+        { name: 'C', logo: 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/c/c-original.svg' }
+      ]
+    },
+    {
+      category: 'Libraries', color: 'cyan', items: [
+        { name: 'pandas, numpy', logo: 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/pandas/pandas-original.svg' },
+        { name: 'matplotlib', logo: '' },
+        { name: 'requests, pillow', logo: '' },
+        { name: 'opencv', logo: 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/opencv/opencv-original.svg' }
+      ]
+    },
+    {
+      category: 'Infra & tools', color: 'pink', items: [
+        { name: 'Git, Docker', logo: 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/docker/docker-original.svg' },
+        { name: 'SQL, SQLite', logo: 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/sqlite/sqlite-original.svg' },
+        { name: 'NoSQL', logo: 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/mongodb/mongodb-original.svg' },
+        { name: 'GitHub Actions', logo: 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/github/github-original.svg' }
+      ]
+    },
+    {
+      category: 'Security & net', color: 'green', items: [
+        { name: 'Wireshark', logo: '' },
+        { name: 'Burp Suite', logo: '' },
+        { name: 'Postman', logo: 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/postman/postman-original.svg' },
+        { name: 'REST APIs', logo: '' }
+      ]
+    }
   ],
   contact: {
     lead: "If you're working on something interesting or just want to chat about bots, security, or running small businesses — the inbox is open.",
@@ -40,10 +68,21 @@ const DEFAULTS = {
   }
 };
 
+// Normalize a single stack item: string -> {name, logo:''}, object passes through.
+function normalizeItem(it) {
+  if (typeof it === 'string') return { name: it, logo: '' };
+  return { name: it?.name || '', logo: it?.logo || '' };
+}
+
 // Returns the SiteConfig, backfilling any empty section with defaults so the admin
 // always loads with editable text rather than blank inputs.
 function mergeWithDefaults(doc) {
   const d = doc?.toObject ? doc.toObject() : (doc || {});
+  const stack = (d.stack?.length ? d.stack : DEFAULTS.stack).map((cat) => ({
+    category: cat.category || '',
+    color: cat.color || 'purple',
+    items: (cat.items || []).map(normalizeItem)
+  }));
   return {
     ...d,
     hero: {
@@ -56,7 +95,7 @@ function mergeWithDefaults(doc) {
       paragraphs: d.about?.paragraphs?.length ? d.about.paragraphs : DEFAULTS.about.paragraphs,
       sidebar: d.about?.sidebar?.length ? d.about.sidebar : DEFAULTS.about.sidebar
     },
-    stack: d.stack?.length ? d.stack : DEFAULTS.stack,
+    stack,
     contact: {
       lead: d.contact?.lead || DEFAULTS.contact.lead,
       email: d.contact?.email || DEFAULTS.contact.email,

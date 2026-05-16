@@ -38,6 +38,9 @@ export default function Admin() {
   const [msg, setMsg] = useState('');
   const [err, setErr] = useState('');
 
+  const normalizeStackItem = (it) =>
+    typeof it === 'string' ? { name: it, logo: '' } : { name: it?.name || '', logo: it?.logo || '' };
+
   const loadProjects = () => api.getProjects().then(setProjects).catch((e) => setErr(e.message));
   const loadConfig = () =>
     api.getConfig().then((c) => setCfg({
@@ -46,7 +49,11 @@ export default function Admin() {
         paragraphs: c.about?.paragraphs || [],
         sidebar: c.about?.sidebar || []
       },
-      stack: c.stack || [],
+      stack: (c.stack || []).map((cat) => ({
+        category: cat.category || '',
+        color: cat.color || 'purple',
+        items: (cat.items || []).map(normalizeStackItem)
+      })),
       contact: { lead: '', email: '', github: '', phone: '', ...(c.contact || {}) }
     })).catch((e) => setErr(e.message));
 
@@ -172,6 +179,40 @@ export default function Admin() {
   const addCat = () => setCfg({ ...cfg, stack: [...cfg.stack, { category: '', color: 'purple', items: [] }] });
   const updCat = (i, k, v) => setCfg({ ...cfg, stack: cfg.stack.map((c, idx) => idx === i ? { ...c, [k]: v } : c) });
   const rmCat = (i) => setCfg({ ...cfg, stack: cfg.stack.filter((_, idx) => idx !== i) });
+
+  // skill item helpers (each item is {name, logo})
+  const addItem = (catIdx) =>
+    setCfg({
+      ...cfg,
+      stack: cfg.stack.map((c, idx) => idx === catIdx ? { ...c, items: [...(c.items || []), { name: '', logo: '' }] } : c)
+    });
+  const updItem = (catIdx, itemIdx, k, v) =>
+    setCfg({
+      ...cfg,
+      stack: cfg.stack.map((c, idx) =>
+        idx === catIdx
+          ? { ...c, items: c.items.map((it, j) => j === itemIdx ? { ...it, [k]: v } : it) }
+          : c
+      )
+    });
+  const rmItem = (catIdx, itemIdx) =>
+    setCfg({
+      ...cfg,
+      stack: cfg.stack.map((c, idx) =>
+        idx === catIdx ? { ...c, items: c.items.filter((_, j) => j !== itemIdx) } : c
+      )
+    });
+  const uploadLogo = async (catIdx, itemIdx, file) => {
+    setErr('');
+    try {
+      const fd = new FormData();
+      fd.append('images', file);
+      const { urls } = await api.uploadImages(fd);
+      if (urls[0]) updItem(catIdx, itemIdx, 'logo', urls[0]);
+    } catch (ex) {
+      setErr(ex.message);
+    }
+  };
 
   const signOut = () => { logout(); nav('/'); };
 
@@ -408,7 +449,7 @@ export default function Admin() {
           <h3>Stack categories</h3>
           {cfg.stack.map((c, i) => (
             <div key={i} style={{ border: '1px solid var(--border)', padding: 16, marginBottom: 12 }}>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 140px auto', gap: 8, marginBottom: 12 }}>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 140px auto', gap: 8, marginBottom: 14 }}>
                 <input placeholder="category name" value={c.category} onChange={(e) => updCat(i, 'category', e.target.value)} />
                 <select value={c.color} onChange={(e) => updCat(i, 'color', e.target.value)}>
                   <option value="purple">purple</option>
@@ -418,13 +459,42 @@ export default function Admin() {
                 </select>
                 <button type="button" className="rm" onClick={() => rmCat(i)}>remove category</button>
               </div>
-              <div className="field" style={{ marginBottom: 0 }}>
-                <label>items (one per line)</label>
-                <textarea
-                  value={(c.items || []).join('\n')}
-                  onChange={(e) => updCat(i, 'items', e.target.value.split('\n').map((s) => s.trim()).filter(Boolean))}
-                />
+
+              <label style={{ display: 'block', fontFamily: 'var(--font-mono)', fontSize: 11, color: 'var(--muted)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 8 }}>
+                items (name + logo url, or upload)
+              </label>
+              <div className="sub-list">
+                {(c.items || []).map((it, j) => (
+                  <div className="skill-item-row" key={j}>
+                    <div className="skill-logo-preview">
+                      {it.logo
+                        ? <img src={it.logo.startsWith('http') ? it.logo : `${API_BASE}${it.logo}`} alt="" />
+                        : <span>—</span>}
+                    </div>
+                    <input
+                      placeholder="skill name"
+                      value={it.name}
+                      onChange={(e) => updItem(i, j, 'name', e.target.value)}
+                    />
+                    <input
+                      placeholder="logo URL (https://...)"
+                      value={it.logo}
+                      onChange={(e) => updItem(i, j, 'logo', e.target.value)}
+                    />
+                    <label className="upload-mini" title="upload logo">
+                      ↑
+                      <input
+                        type="file"
+                        accept="image/*"
+                        style={{ display: 'none' }}
+                        onChange={(e) => { const f = e.target.files?.[0]; if (f) uploadLogo(i, j, f); e.target.value = ''; }}
+                      />
+                    </label>
+                    <button type="button" className="rm" onClick={() => rmItem(i, j)}>×</button>
+                  </div>
+                ))}
               </div>
+              <button type="button" className="btn ghost" onClick={() => addItem(i)} style={{ marginTop: 8 }}>+ add skill</button>
             </div>
           ))}
           <button type="button" className="btn ghost" onClick={addCat}>+ add category</button>

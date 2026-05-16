@@ -41,20 +41,22 @@ export default function Work() {
     <>
       <Nav />
 
-      <header className="hero" style={{ paddingBottom: 60 }}>
-        <div className="wrap">
-          <div className="label">SB — work archive</div>
-          <h1>
-            <span className="glitch" data-text="Things">Things</span>{' '}
-            I've built,<br />
-            <span className="accent">shipped, or sold.</span>
-          </h1>
-          <p className="sub" style={{ marginTop: 18 }}>
-            The full list. Some made money, some didn't, some I'd do differently
-            now. All taught me something.
-          </p>
-        </div>
-      </header>
+      {!active && (
+        <header className="hero" style={{ paddingBottom: 60 }}>
+          <div className="wrap">
+            <div className="label">SB — work archive</div>
+            <h1>
+              <span className="glitch" data-text="Things">Things</span>{' '}
+              I've built,<br />
+              <span className="accent">shipped, or sold.</span>
+            </h1>
+            <p className="sub" style={{ marginTop: 18 }}>
+              The full list. Some made money, some didn't, some I'd do differently
+              now. All taught me something.
+            </p>
+          </div>
+        </header>
+      )}
 
       <section style={{ padding: '24px 0 80px' }}>
         <div className="wrap">
@@ -74,7 +76,7 @@ export default function Work() {
                   <button
                     key={p._id}
                     className="work-card"
-                    onClick={() => setActiveIdx(i)}
+                    onClick={() => { setActiveIdx(i); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
                   >
                     <div className="work-card-thumb">
                       {thumb ? (
@@ -116,7 +118,10 @@ export default function Work() {
 
             return (
               <>
-                <button className="work-back" onClick={() => setActiveIdx(null)}>
+                <button
+                  className="work-back"
+                  onClick={() => { setActiveIdx(null); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
+                >
                   ← all projects
                 </button>
 

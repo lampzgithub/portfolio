@@ -16,14 +16,26 @@ const sidebarItemSchema = new mongoose.Schema(
   { _id: false }
 );
 
+const stackItemSchema = new mongoose.Schema(
+  {
+    name: { type: String, default: '' },
+    logo: { type: String, default: '' }
+  },
+  { _id: false }
+);
+
 const stackCategorySchema = new mongoose.Schema(
   {
     category: { type: String, default: '' },
     color: { type: String, enum: ['purple', 'cyan', 'pink', 'green'], default: 'purple' },
-    items: [{ type: String }]
+    // Mixed allows legacy string items to coexist with the new {name, logo} objects;
+    // normalization is done in the config route on read.
+    items: [{ type: mongoose.Schema.Types.Mixed }]
   },
   { _id: false }
 );
+
+module.exports.stackItemSchema = stackItemSchema;
 
 const siteConfigSchema = new mongoose.Schema(
   {

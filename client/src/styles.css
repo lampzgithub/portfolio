@@ -22,6 +22,8 @@
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
 
+html { scroll-behavior: smooth; scroll-padding-top: 80px; }
+
 html, body {
   background: var(--bg);
   color: var(--text);
@@ -310,11 +312,21 @@ section.block {
 .skill-cell ul { list-style: none; }
 .skill-cell li {
   font-size: 15px;
-  padding: 5px 0;
+  padding: 7px 0;
   color: var(--body);
   border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+  display: flex;
+  align-items: center;
+  gap: 10px;
 }
 .skill-cell li:last-child { border-bottom: none; }
+.skill-logo {
+  width: 20px;
+  height: 20px;
+  object-fit: contain;
+  flex-shrink: 0;
+  filter: drop-shadow(0 0 6px rgba(200, 180, 255, 0.15));
+}
 
 /* ── PROJECTS LIST (home) ── */
 .proj-list { display: flex; flex-direction: column; gap: 10px; }
@@ -935,6 +947,48 @@ footer {
 .sub-row.two { grid-template-columns: 1fr 1fr auto; }
 .sub-row.three { grid-template-columns: 1fr 1fr 120px auto; }
 .sub-row button.rm { color: var(--danger); font-family: var(--font-mono); font-size: 11px; padding: 6px 8px; border: 1px solid rgba(255, 138, 138, 0.25); }
+
+/* ── ADMIN: SKILL ITEM ROW (stack tab) ── */
+.skill-item-row {
+  display: grid;
+  grid-template-columns: 40px 1fr 1.4fr 32px 32px;
+  gap: 8px;
+  align-items: center;
+}
+.skill-item-row button.rm {
+  color: var(--danger);
+  font-family: var(--font-mono);
+  font-size: 13px;
+  padding: 6px 8px;
+  border: 1px solid rgba(255, 138, 138, 0.25);
+  background: transparent;
+}
+.skill-logo-preview {
+  width: 40px; height: 40px;
+  display: flex; align-items: center; justify-content: center;
+  border: 1px solid var(--border);
+  background: var(--surface);
+}
+.skill-logo-preview img { max-width: 28px; max-height: 28px; object-fit: contain; }
+.skill-logo-preview span { color: var(--muted); font-family: var(--font-mono); font-size: 14px; }
+.upload-mini {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px; height: 32px;
+  border: 1px solid var(--border-strong);
+  color: var(--purple);
+  font-family: var(--font-mono);
+  font-size: 16px;
+  cursor: pointer;
+  background: rgba(200, 180, 255, 0.05);
+  transition: background 0.15s;
+}
+.upload-mini:hover { background: rgba(200, 180, 255, 0.15); }
+@media (max-width: 720px) {
+  .skill-item-row { grid-template-columns: 40px 1fr 28px 28px; }
+  .skill-item-row > input:nth-child(3) { grid-column: 1 / -1; }
+}
 
 /* ── MOBILE ── */
 @media (max-width: 720px) {
