@@ -266,7 +266,7 @@ export default function Admin() {
                         ) : (
                           <div>
                             <input
-                              type="url"
+                              type="text"
                               value={bl.content}
                               onChange={(e) => updateBlock(i, e.target.value)}
                               placeholder="https://i.imgur.com/...  or upload below"
