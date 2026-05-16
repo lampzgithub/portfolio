@@ -368,6 +368,51 @@ section.block {
 }
 .proj-row:hover .arrow { opacity: 1; }
 
+/* ── WORK PAGE TABS ── */
+.work-tabs {
+  display: flex;
+  gap: 4px;
+  flex-wrap: wrap;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 8px;
+  padding-bottom: 0;
+}
+.work-tab {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 10px;
+  padding: 12px 18px;
+  border: none;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -1px;
+  background: transparent;
+  color: var(--muted);
+  cursor: pointer;
+  transition: color 0.2s, border-color 0.2s, background 0.2s;
+  font-family: var(--font-display);
+  font-size: 15px;
+  font-weight: 500;
+  letter-spacing: -0.01em;
+}
+.work-tab:hover { color: var(--body); background: rgba(200, 180, 255, 0.04); }
+.work-tab.active {
+  color: var(--purple);
+  border-bottom-color: var(--purple);
+  background: rgba(200, 180, 255, 0.06);
+}
+.work-tab-num {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--muted);
+  letter-spacing: 0.06em;
+}
+.work-tab.active .work-tab-num { color: var(--cyan); }
+
+@media (max-width: 720px) {
+  .work-tabs { gap: 0; }
+  .work-tab { padding: 10px 12px; font-size: 13px; flex: 1 0 auto; }
+}
+
 /* ── PROJECT DETAIL (work page) ── */
 .proj-detail {
   padding: 60px 0 80px;

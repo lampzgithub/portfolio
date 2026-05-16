@@ -13,6 +13,7 @@ function fullUrl(u) {
 export default function Work() {
   const [projects, setProjects] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [activeIdx, setActiveIdx] = useState(0);
   const [lb, setLb] = useState({ open: false, images: [], index: 0 });
 
   useEffect(() => {
@@ -28,6 +29,8 @@ export default function Work() {
   const openLightbox = (allImages, index) =>
     setLb({ open: true, images: allImages.map(fullUrl), index });
   const closeLb = () => setLb((s) => ({ ...s, open: false }));
+
+  const active = projects[activeIdx];
 
   return (
     <>
@@ -48,7 +51,7 @@ export default function Work() {
         </div>
       </header>
 
-      <section style={{ padding: '40px 0 80px' }}>
+      <section style={{ padding: '24px 0 80px' }}>
         <div className="wrap">
           {loading && <p style={{ color: 'var(--muted)' }}>Loading…</p>}
           {!loading && projects.length === 0 && (
@@ -56,12 +59,30 @@ export default function Work() {
               Nothing here yet.
             </p>
           )}
-          {projects.map((p, i) => {
-            const imageBlocks = (p.blocks || []).filter((b) => b.type === 'image').map((b) => b.content);
+
+          {projects.length > 0 && (
+            <div className="work-tabs" role="tablist">
+              {projects.map((p, i) => (
+                <button
+                  key={p._id}
+                  role="tab"
+                  aria-selected={i === activeIdx}
+                  className={`work-tab ${i === activeIdx ? 'active' : ''}`}
+                  onClick={() => setActiveIdx(i)}
+                >
+                  <span className="work-tab-num">{String(i + 1).padStart(2, '0')}</span>
+                  <span className="work-tab-title">{p.title}</span>
+                </button>
+              ))}
+            </div>
+          )}
+
+          {active && (() => {
+            const imageBlocks = (active.blocks || []).filter((b) => b.type === 'image').map((b) => b.content);
             const imageIndexInGallery = (idx) => {
               let count = 0;
-              for (let k = 0; k < (p.blocks || []).length; k++) {
-                if (p.blocks[k].type !== 'image') continue;
+              for (let k = 0; k < (active.blocks || []).length; k++) {
+                if (active.blocks[k].type !== 'image') continue;
                 if (k === idx) return count;
                 count++;
               }
@@ -69,40 +90,39 @@ export default function Work() {
             };
 
             return (
-              <article className="proj-detail" key={p._id}>
+              <article className="proj-detail" key={active._id}>
                 <div className="head">
                   <h2>
                     <span style={{ fontFamily: 'var(--font-mono)', fontSize: 14, color: 'var(--muted)', marginRight: 14 }}>
-                      {String(i + 1).padStart(2, '0')}
+                      {String(activeIdx + 1).padStart(2, '0')}
                     </span>
-                    {p.title}
+                    {active.title}
                   </h2>
                   <div className="meta-block">
-                    {p.period && <div><strong>When</strong> · {p.period}</div>}
-                    {p.role && <div><strong>Role</strong> · {p.role}</div>}
+                    {active.period && <div><strong>When</strong> · {active.period}</div>}
+                    {active.role && <div><strong>Role</strong> · {active.role}</div>}
                   </div>
                 </div>
 
-                {p.tagline && (
+                {active.tagline && (
                   <p style={{ fontSize: 19, fontStyle: 'italic', color: 'var(--muted)', marginBottom: 22 }}>
-                    {p.tagline}
+                    {active.tagline}
                   </p>
                 )}
 
-                <p className="desc">{p.description}</p>
+                <p className="desc">{active.description}</p>
 
-                {p.highlights?.length > 0 && (
+                {active.highlights?.length > 0 && (
                   <ul className="highlights">
-                    {p.highlights.map((h, idx) => (
+                    {active.highlights.map((h, idx) => (
                       <li key={idx}>{h}</li>
                     ))}
                   </ul>
                 )}
 
-                {/* ── BLOCKS (Medium-style) ── */}
-                {p.blocks?.length > 0 && (
+                {active.blocks?.length > 0 && (
                   <div className="post-body">
-                    {p.blocks.map((bl, idx) => {
+                    {active.blocks.map((bl, idx) => {
                       const size = bl.size || 'medium';
                       if (bl.type === 'text') {
                         return (
@@ -128,23 +148,23 @@ export default function Work() {
                   </div>
                 )}
 
-                {p.stack?.length > 0 && (
+                {active.stack?.length > 0 && (
                   <div className="stack">
-                    {p.stack.map((s, idx) => (
+                    {active.stack.map((s, idx) => (
                       <span key={idx}>{s}</span>
                     ))}
                   </div>
                 )}
 
-                {(p.link || p.github) && (
+                {(active.link || active.github) && (
                   <div className="links">
-                    {p.link && (
-                      <a href={p.link} target="_blank" rel="noreferrer">
+                    {active.link && (
+                      <a href={active.link} target="_blank" rel="noreferrer">
                         visit →
                       </a>
                     )}
-                    {p.github && (
-                      <a href={p.github} target="_blank" rel="noreferrer">
+                    {active.github && (
+                      <a href={active.github} target="_blank" rel="noreferrer">
                         source →
                       </a>
                     )}
@@ -152,7 +172,7 @@ export default function Work() {
                 )}
               </article>
             );
-          })}
+          })()}
         </div>
       </section>
 
