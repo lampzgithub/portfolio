@@ -1,5 +1,4 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { api } from '../api.js';
 import { useAuth } from '../context/AuthContext.jsx';
 
@@ -9,7 +8,6 @@ export default function Login() {
   const [err, setErr] = useState('');
   const [busy, setBusy] = useState(false);
   const { login } = useAuth();
-  const nav = useNavigate();
 
   const submit = async (e) => {
     e.preventDefault();
@@ -18,7 +16,7 @@ export default function Login() {
     try {
       const { token, username: u } = await api.login(username, password);
       login(token, u);
-      nav('/baapdada');
+      // No navigation here — Protected re-renders to Admin when isAuthed flips.
     } catch (e) {
       setErr(e.message);
     } finally {

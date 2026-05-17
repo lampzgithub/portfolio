@@ -1,4 +1,4 @@
-import { Routes, Route, Navigate } from 'react-router-dom';
+import { Routes, Route } from 'react-router-dom';
 import Home from './pages/Home.jsx';
 import Work from './pages/Work.jsx';
 import Login from './pages/Login.jsx';
@@ -6,9 +6,11 @@ import Admin from './pages/Admin.jsx';
 import Test from './pages/Test.jsx';
 import { useAuth } from './context/AuthContext.jsx';
 
+// Renders Login inline when not authenticated — no separate /login URL exists,
+// so the only way in is to know the obscure /baapdada path.
 function Protected({ children }) {
   const { isAuthed } = useAuth();
-  if (!isAuthed) return <Navigate to="/login" replace />;
+  if (!isAuthed) return <Login />;
   return children;
 }
 
@@ -18,7 +20,6 @@ export default function App() {
       <Route path="/" element={<Home />} />
       <Route path="/work" element={<Work />} />
       <Route path="/test" element={<Test />} />
-      <Route path="/login" element={<Login />} />
       <Route
         path="/baapdada"
         element={
@@ -27,7 +28,6 @@ export default function App() {
           </Protected>
         }
       />
-      {/* old /admin path -> 404 by not handling it; obscurity is the point */}
     </Routes>
   );
 }
