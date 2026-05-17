@@ -48,8 +48,8 @@ function Brand() {
     >
       {clicked ? (
         <span className="brand-cheems" key="cheems">
-          <span className="brand-cheems-emoji" aria-hidden="true">🐶</span>
-          <span className="brand-cheems-text">cheems</span>
+          <img className="brand-cheems-img" src="/cheems.png" alt="" />
+          <span className="brand-cheems-text">HEMLO</span>
         </span>
       ) : (
         <span className="brand-text" key={hover ? 'long' : 'short'}>
