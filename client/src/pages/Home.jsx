@@ -7,7 +7,7 @@ import { api } from '../api.js';
 const DEFAULT_CONFIG = {
   hero: {
     eyebrow: 'SB — 01 / portfolio',
-    tagline: 'Reverse-engineers problems until they give up.',
+    tagline: 'I dont know but ill get it done',
     sub: 'Ran a Discord community of 13k people before I could drive. Built and sold a dev agency by 20. Now going deep on systems, security, and the fundamentals I skipped the first time.',
     badges: [
       { label: 'Delhi, India', color: 'purple' },
@@ -56,9 +56,9 @@ const DEFAULT_CONFIG = {
   ],
   contact: {
     lead: "If you're working on something interesting or just want to chat about bots, security, or running small businesses — the inbox is open.",
-    email: 'shreekantbhama5@gmail.com',
+    email: 's',
     github: 'https://github.com/cheemzboi',
-    phone: '+91 85729 97389'
+    phone: 'm'
   }
 };
 
