@@ -1,6 +1,8 @@
 import { useRef, useState } from 'react';
 import { NavLink, useLocation, useNavigate } from 'react-router-dom';
 
+const cheemsUrl = `${import.meta.env.BASE_URL}cheems.png`;
+
 function smoothScrollToId(id) {
   const el = document.getElementById(id);
   if (!el) return false;
@@ -48,7 +50,7 @@ function Brand() {
     >
       {clicked ? (
         <span className="brand-cheems" key="cheems">
-          <img className="brand-cheems-img" src="/cheems.png" alt="" />
+          <img className="brand-cheems-img" src={cheemsUrl} alt="" />
           <span className="brand-cheems-text">HEMLO</span>
         </span>
       ) : (
