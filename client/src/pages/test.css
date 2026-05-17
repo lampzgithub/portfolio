@@ -1,0 +1,310 @@
+/* Editorial Brutalist — scoped under .brutalist to avoid clashing with the main site. */
+@import url('https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&display=swap');
+
+.brutalist {
+  --b-ink: #0c0c0a;
+  --b-ink-2: #14140f;
+  --b-paper: #f5f3ea;
+  --b-lime: #d4ff00;
+  --b-lime-soft: #c8ec00;
+  --b-line: rgba(245, 243, 234, 0.12);
+  --b-muted: rgba(245, 243, 234, 0.5);
+
+  --b-display: 'Instrument Serif', 'Times New Roman', serif;
+  --b-mono: 'JetBrains Mono', ui-monospace, monospace;
+
+  background: var(--b-ink);
+  color: var(--b-paper);
+  font-family: var(--b-display);
+  line-height: 1.3;
+  min-height: 100vh;
+  position: relative;
+  overflow-x: hidden;
+}
+
+/* reset for everything inside this scope */
+.brutalist *,
+.brutalist *::before,
+.brutalist *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+.brutalist a { color: inherit; text-decoration: none; }
+.brutalist ul { list-style: none; }
+
+/* film grain (animated svg noise) */
+.b-grain {
+  position: fixed; inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0.96 0 0 0 0 0.95 0 0 0 0 0.92 0 0 0 0.45 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.55'/%3E%3C/svg%3E");
+  opacity: 0.18;
+  mix-blend-mode: overlay;
+  pointer-events: none;
+  z-index: 100;
+  animation: b-grain 0.7s steps(6) infinite;
+}
+@keyframes b-grain {
+  0%,100% { transform: translate(0,0); }
+  10% { transform: translate(-2%,-3%); }
+  20% { transform: translate(3%,2%); }
+  30% { transform: translate(-1%,3%); }
+  40% { transform: translate(2%,-2%); }
+  50% { transform: translate(-3%,1%); }
+  60% { transform: translate(1%,-3%); }
+  70% { transform: translate(3%,3%); }
+  80% { transform: translate(-1%,-1%); }
+  90% { transform: translate(2%,2%); }
+}
+
+.b-grid-rule {
+  position: fixed; inset: 0;
+  background-image: linear-gradient(to right, var(--b-line) 1px, transparent 1px);
+  background-size: 8.333% 100%;
+  pointer-events: none;
+  opacity: 0.5;
+  z-index: 1;
+}
+
+/* nav */
+.brutalist .b-nav {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 24px 32px;
+  border-bottom: 1px solid var(--b-line);
+  font-family: var(--b-mono);
+  font-size: 12px;
+  letter-spacing: 0.04em;
+  position: relative;
+  z-index: 2;
+}
+.b-brand {
+  font-family: var(--b-display);
+  font-size: 22px;
+  font-style: italic;
+  letter-spacing: -0.02em;
+  color: var(--b-paper);
+}
+.b-brand sup {
+  font-size: 11px;
+  font-family: var(--b-mono);
+  font-style: normal;
+  margin-left: 6px;
+  color: var(--b-lime);
+  vertical-align: super;
+}
+.brutalist .b-nav ul { display: flex; gap: 28px; }
+.brutalist .b-nav a { color: var(--b-paper); opacity: 0.6; transition: opacity 0.2s, color 0.2s; cursor: pointer; }
+.brutalist .b-nav a:hover { opacity: 1; }
+.brutalist .b-nav a.b-active { opacity: 1; color: var(--b-lime); }
+
+/* marquee */
+.b-marquee {
+  overflow: hidden;
+  border-bottom: 1px solid var(--b-line);
+  background: var(--b-ink-2);
+  padding: 14px 0;
+  position: relative;
+  z-index: 2;
+}
+.b-marquee-track {
+  display: flex;
+  gap: 80px;
+  animation: b-marquee 32s linear infinite;
+  white-space: nowrap;
+  font-family: var(--b-display);
+  font-style: italic;
+  font-size: 28px;
+  color: var(--b-lime);
+}
+.b-marquee-track span::after {
+  content: '✦';
+  margin-left: 80px;
+  color: var(--b-paper);
+  opacity: 0.4;
+  font-style: normal;
+}
+@keyframes b-marquee {
+  from { transform: translateX(0); }
+  to { transform: translateX(-50%); }
+}
+
+/* hero */
+.b-hero { padding: 100px 32px 80px; position: relative; z-index: 2; }
+.b-eyebrow {
+  font-family: var(--b-mono);
+  font-size: 11px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--b-lime);
+  margin-bottom: 32px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+.b-eyebrow::before {
+  content: '';
+  width: 32px; height: 1px;
+  background: var(--b-lime);
+}
+.brutalist .b-hero h1 {
+  font-family: var(--b-display);
+  font-size: clamp(72px, 14vw, 220px);
+  line-height: 0.88;
+  letter-spacing: -0.04em;
+  font-weight: 400;
+  max-width: 1000px;
+}
+.b-it { font-style: italic; color: var(--b-lime); }
+.b-underline {
+  text-decoration: underline;
+  text-decoration-thickness: 2px;
+  text-underline-offset: 14px;
+}
+
+.b-hero-meta {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 32px;
+  margin-top: 60px;
+  padding-top: 32px;
+  border-top: 1px solid var(--b-line);
+  font-family: var(--b-mono);
+  font-size: 12px;
+  color: var(--b-muted);
+}
+.b-meta-label { display: block; }
+.brutalist .b-hero-meta strong {
+  display: block;
+  color: var(--b-paper);
+  font-family: var(--b-display);
+  font-style: italic;
+  font-size: 22px;
+  font-weight: 400;
+  margin-top: 6px;
+  letter-spacing: -0.01em;
+}
+
+/* big section title */
+.b-section-title {
+  padding: 80px 32px 24px;
+  border-top: 1px solid var(--b-line);
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: end;
+  position: relative;
+  z-index: 2;
+}
+.brutalist .b-section-title h2 {
+  font-family: var(--b-display);
+  font-size: clamp(56px, 10vw, 144px);
+  font-weight: 400;
+  line-height: 0.9;
+  letter-spacing: -0.04em;
+}
+.brutalist .b-section-title h2 em { font-style: italic; color: var(--b-lime); }
+.b-num {
+  font-family: var(--b-mono);
+  font-size: 12px;
+  color: var(--b-muted);
+  letter-spacing: 0.1em;
+  text-align: right;
+}
+
+/* magnetic project rows */
+.b-proj-list {
+  border-top: 1px solid var(--b-line);
+  margin: 32px 0 0;
+  position: relative;
+  z-index: 2;
+}
+.b-proj-empty {
+  padding: 60px 32px;
+  font-family: var(--b-mono);
+  color: var(--b-muted);
+  font-size: 13px;
+  text-align: center;
+}
+.b-proj-row {
+  position: relative;
+  display: grid;
+  grid-template-columns: 100px 1fr auto;
+  gap: 32px;
+  padding: 40px 32px;
+  align-items: center;
+  border-bottom: 1px solid var(--b-line);
+  cursor: pointer;
+  transition: background 0.4s ease, color 0.4s ease, transform 0.18s cubic-bezier(0.22, 1, 0.36, 1);
+  will-change: transform;
+  overflow: hidden;
+  color: var(--b-paper);
+}
+.b-proj-row::before {
+  content: '';
+  position: absolute; inset: 0;
+  background: var(--b-lime);
+  transform: scaleY(0);
+  transform-origin: bottom;
+  transition: transform 0.45s cubic-bezier(0.22, 1, 0.36, 1);
+  z-index: -1;
+}
+.b-proj-row:hover::before { transform: scaleY(1); }
+.b-proj-row:hover { color: var(--b-ink); }
+.b-proj-row:hover .b-idx,
+.b-proj-row:hover .b-tag,
+.b-proj-row:hover .b-arrow { color: var(--b-ink); opacity: 1; }
+
+.b-idx {
+  font-family: var(--b-mono);
+  font-size: 13px;
+  color: var(--b-muted);
+  letter-spacing: 0.06em;
+  transition: color 0.4s, opacity 0.4s;
+}
+.brutalist .b-proj-row h3 {
+  font-family: var(--b-display);
+  font-size: clamp(36px, 5vw, 72px);
+  font-weight: 400;
+  line-height: 0.95;
+  letter-spacing: -0.025em;
+}
+.brutalist .b-proj-row h3 em { font-style: italic; }
+.b-tag {
+  font-family: var(--b-mono);
+  font-size: 12px;
+  color: var(--b-muted);
+  letter-spacing: 0.04em;
+  margin-top: 8px;
+  transition: color 0.4s, opacity 0.4s;
+}
+.b-arrow {
+  font-family: var(--b-display);
+  font-style: italic;
+  font-size: 36px;
+  transition: transform 0.4s, opacity 0.4s, color 0.4s;
+  opacity: 0.4;
+}
+.b-proj-row:hover .b-arrow {
+  transform: translateX(12px) rotate(-12deg);
+  opacity: 1;
+}
+
+/* footer */
+.b-foot {
+  padding: 60px 32px;
+  text-align: center;
+  border-top: 1px solid var(--b-line);
+  font-family: var(--b-mono);
+  font-size: 11px;
+  color: var(--b-muted);
+  letter-spacing: 0.1em;
+  position: relative;
+  z-index: 2;
+}
+.brutalist .b-foot a { color: var(--b-lime); text-decoration: underline; text-underline-offset: 4px; }
+
+/* mobile */
+@media (max-width: 720px) {
+  .b-hero-meta { grid-template-columns: 1fr; gap: 18px; }
+  .brutalist .b-nav ul { gap: 14px; font-size: 11px; }
+  .b-proj-row { grid-template-columns: 60px 1fr; padding: 24px 20px; }
+  .b-arrow { display: none; }
+  .b-marquee-track { font-size: 22px; gap: 60px; }
+}

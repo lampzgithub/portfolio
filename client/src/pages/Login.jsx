@@ -18,7 +18,7 @@ export default function Login() {
     try {
       const { token, username: u } = await api.login(username, password);
       login(token, u);
-      nav('/admin');
+      nav('/baapdada');
     } catch (e) {
       setErr(e.message);
     } finally {
