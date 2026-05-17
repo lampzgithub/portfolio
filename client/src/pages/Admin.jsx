@@ -516,8 +516,6 @@ export default function Admin() {
             <input value={cfg.contact.email} onChange={(e) => updContact('email', e.target.value)} /></div>
           <div className="field"><label>github URL</label>
             <input value={cfg.contact.github} onChange={(e) => updContact('github', e.target.value)} /></div>
-          <div className="field"><label>phone</label>
-            <input value={cfg.contact.phone} onChange={(e) => updContact('phone', e.target.value)} /></div>
           <div className="btn-row">
             <button type="button" className="btn" onClick={saveConfig}>save contact</button>
           </div>

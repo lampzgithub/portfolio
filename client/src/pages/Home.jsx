@@ -261,7 +261,6 @@ export default function Home() {
             <div className="contact-list">
               {cfg.contact.email && <a href={`mailto:${cfg.contact.email}`}>{cfg.contact.email} →</a>}
               {cfg.contact.github && <a href={cfg.contact.github} target="_blank" rel="noreferrer">github →</a>}
-              {cfg.contact.phone && <a href={`tel:${cfg.contact.phone.replace(/\s+/g, '')}`}>{cfg.contact.phone} →</a>}
             </div>
           </div>
         </div>
