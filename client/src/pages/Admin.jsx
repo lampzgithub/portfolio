@@ -155,7 +155,9 @@ export default function Admin() {
   const saveConfig = async () => {
     clearMsg();
     try {
-      await api.updateConfig(cfg);
+      const fresh = await api.updateConfig(cfg);
+      // bust the public-page cache so home renders the new content immediately
+      try { localStorage.setItem('sb_site_cfg_v1', JSON.stringify(fresh)); } catch { /* ignore quota */ }
       setMsg('site content saved');
       await loadConfig();
     } catch (ex) { setErr(ex.message); }

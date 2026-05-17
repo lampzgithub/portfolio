@@ -79,6 +79,21 @@ function mergeCfg(remote) {
   };
 }
 
+const CFG_CACHE_KEY = 'sb_site_cfg_v1';
+
+function readCfgCache() {
+  try {
+    const raw = localStorage.getItem(CFG_CACHE_KEY);
+    return raw ? mergeCfg(JSON.parse(raw)) : null;
+  } catch { return null; }
+}
+
+function writeCfgCache(c) {
+  try { localStorage.setItem(CFG_CACHE_KEY, JSON.stringify(c)); } catch {
+    /* quota or privacy mode — render still works, just no caching */
+  }
+}
+
 function useReveal() {
   const ref = useRef(null);
   useEffect(() => {
@@ -96,14 +111,22 @@ function useReveal() {
 
 export default function Home() {
   const [projects, setProjects] = useState([]);
-  const [cfg, setCfg] = useState(DEFAULT_CONFIG);
+  // Initial state: cached config from a previous visit if available, otherwise
+  // the hardcoded defaults. This is what fixes the flash-of-old-text on reload.
+  const [cfg, setCfg] = useState(() => readCfgCache() || DEFAULT_CONFIG);
   const rootRef = useReveal();
   const loc = useLocation();
   const nav = useNavigate();
 
   useEffect(() => {
     api.getProjects().then(setProjects).catch(() => setProjects([]));
-    api.getConfig().then((c) => setCfg(mergeCfg(c))).catch(() => setCfg(DEFAULT_CONFIG));
+    api.getConfig()
+      .then((c) => {
+        const merged = mergeCfg(c);
+        setCfg(merged);
+        writeCfgCache(c);
+      })
+      .catch(() => { /* keep cached or default */ });
   }, []);
 
   // Scroll to section if Nav pushed us here with a scrollTo target,
