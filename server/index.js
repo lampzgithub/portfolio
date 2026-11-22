@@ -50,6 +50,12 @@ app.use(cors({
 }));
 app.use(express.json());
 
+// keep API responses and uploaded images out of search engines
+app.use((req, res, next) => {
+  res.set('X-Robots-Tag', 'noindex, nofollow, noarchive, nosnippet, noimageindex');
+  next();
+});
+
 // trust proxy for accurate rate-limit IP on Railway
 app.set('trust proxy', 1);
 
